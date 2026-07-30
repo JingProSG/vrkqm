@@ -38,12 +38,6 @@ function KeyBoardI:init()
 end
 
 function KeyBoardI:OnUpdate() 
-        local player = PlayerManager:getClientPlayer()
-        if player == nil then
-            return
-        end
-        local pos = player.Player:getPosition()
-        MsgSender.sendTopTips(1, string.format("XYZ: %s / %s / %s", tostring(math.floor(pos.x)), tostring(math.floor(pos.y)), tostring(math.floor(pos.z))))
     end
     
 function KeyBoardI.onKeyUp(keyName, keyCode)
@@ -129,7 +123,7 @@ ClientHelper.putBoolPrefs("DisStepSound", true)
 	 
 	end, 5, 200)
     GMHelper:telnetServer()
-    GMHelper:XYZ()
+    ()
 	GMHelper:NewGUI()
 	GMHelper:GUIButton2()
 	GMHelper:GUIButton()
@@ -674,18 +668,7 @@ function GMHelper:moveDebugInfo(offsetX, offsetY)
 end
 
 
-function GMHelper:XYZ()
-     LuaTimer:scheduleTimer(function()
-     local player = PlayerManager:getClientPlayer()
-        if player == nil then
-            return
-        end
-        local pos = player.Player:getPosition()
-        MsgSender.sendTopTips(1, string.format("XYZ: %s / %s / %s", tostring(math.floor(pos.x)), tostring(math.floor(pos.y)), tostring(math.floor(pos.z))))
-   
-        end, 5, 10000000)
-        
-end
+
 
 
 function GMHelper:GUIButton2()
@@ -1139,14 +1122,6 @@ CenterToastg2 = GUIManager:createGUIWindow(GUIType.Button, "GUIRoot-GM1")
         CenterToastg2:SetPushedImage("set:gui_inventory_icon.json image:icon_bookrack")
               
     
-      CenterToastg2:registerEvent(GUIEvent.TouchMove, function()
-      timer.cipka = LuaTimer:scheduleTimer(function()
-         if not Blockman.Instance().m_gameSettings:isMouseMoving() then
-           local mousePos = Blockman.Instance().m_gameSettings:getMousePos()
-            CenterToastg2:SetXPosition({0, mousePos.x / 1.5 - 640 })
-            CenterToastg2:SetYPosition({0, mousePos.y / 1.5 - 355 })
-         end
-      end,5,250) end)
       CenterToastg2:registerEvent(GUIEvent.ButtonClick, function()
       isTest = true
       GUIGMControlPanel:show()
@@ -3461,7 +3436,7 @@ function GMHelper:Scaffold()
         GUIManager:getWindowByName("Main-HideAndSeek-Operate"):SetVisible(true)
         GUIManager:getWindowByName("Main-BuildWar-Block"):SetVisible(true)
         GUIManager:getWindowByName("Main-Parachute"):SetVisible(true)
-        GUIManager:getWindowByName("Main-Cannon"):SetVisible(true)
+        GUIManager:getWindowByName("Main-Cannon"):SetVisible(false)
     end
 
 

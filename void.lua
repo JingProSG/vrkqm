@@ -2412,19 +2412,23 @@ function engine_clientUiLayoutGUIGMControlPanel.show(p124)
 		end)
 	end
 end
-function GMHelper.GMShow(p125)
-	p125.root = UIHelper.newEngineGUILayout("GUIGMMain", "GMMain.json")
-	p125.root:show()
-
-	local Button = GUIType.Button
-
-	p125.btnOpen = u70:getChildWindow("GMMain-Open", Button)
-	p125.btnOpen:registerEvent(GUIEvent.ButtonClick, function()
-		SoundUtil.playSound(70)
+function GMHelper.GMShow(_)
+	local panelBtn = GUIManager:createGUIWindow(GUIType.Button, "GUIRoot-GM1")
+	panelBtn:SetHorizontalAlignment(HorizontalAlignment.Center)
+	panelBtn:SetVerticalAlignment(VerticalAlignment.Center)
+	panelBtn:SetHeight({ 0, 70 })
+	panelBtn:SetWidth({ 0, 70 })
+	panelBtn:SetTouchable(true)
+	GUISystem.Instance():GetRootWindow():AddChildWindow(panelBtn)
+	panelBtn:SetVisible(true)
+	panelBtn:SetYPosition({0, -65})
+	panelBtn:SetXPosition({0, 385})
+	panelBtn:SetNormalImage("set:gui_inventory_icon.json image:icon_bookrack")
+	panelBtn:SetPushedImage("set:gui_inventory_icon.json image:icon_bookrack")
+	panelBtn:registerEvent(GUIEvent.ButtonClick, function()
 		isTest = true
 		GUIGMControlPanel:show()
-		LuaTimer:scheduleTimer(function()
-		end, 5, 100)
+		LuaTimer:scheduleTimer(function() end, 5, 100)
 		isTest = false
 	end)
 end

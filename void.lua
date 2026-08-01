@@ -4389,23 +4389,27 @@ end
 function GMHelper:TPALLPLAYERTOME()
     local players = PlayerManager:getPlayers()
     local client = PlayerManager:getClientPlayer()
-    local clientId = client:getEntityId()
     local clientPos = client:getPosition()
+    local clientRot = client:getRotation()
 
     for _, player in pairs(players) do
         if player ~= client then
             local targetId = player:getEntityId()
 
-            PacketSender:getSender():sendBindEntity(clientId, targetId, "teleport", 0)
+            PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
+            PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+
+            PacketSender:getSender():sendPlayerInput(targetId, 1, 0, 0, 0)
+            PacketSender:getSender():sendPlayerInput(targetId, 0, 0, 0, 1)
 
             LuaTimer:schedule(function()
                 PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
-                PacketSender:getSender():sendEntityRotation(targetId, client:getRotation():getYaw(), client:getRotation():getPitch())
-            end, 20)
+                PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+            end, 30)
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendUnbindEntity(targetId)
-            end, 150 + math.random(0, 50))
+                PacketSender:getSender():sendPlayerInput(targetId, 0, 0, 0, 0)
+            end, 60)
         end
     end
 end

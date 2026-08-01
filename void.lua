@@ -4401,42 +4401,41 @@ function GMHelper:TPALLPLAYERTOME()
         end
     end
 
-    local logPath = "/storage/emulated/0/apkedit/send_methods.log"
-    local file = io.open(logPath, "w")
-    if file then
-        file:write("Available send methods:\n")
-        for _, m in ipairs(methods) do
-            file:write(m .. "\n")
-        end
-        file:close()
-        MsgSender.sendMsg("^00FF00[TPALL] Log saved to: " .. logPath)
-    else
-        MsgSender.sendMsg("^FF0000[TPALL] Failed to write log file.")
+    MsgSender.sendMsg("^FF0000===== TPALL METHODS START =====")
+    for i, m in ipairs(methods) do
+        LuaTimer:schedule(function()
+            MsgSender.sendMsg("^FFFF00" .. tostring(i) .. ": ^FFFFFF" .. m)
+        end, i * 100)
     end
+    LuaTimer:schedule(function()
+        MsgSender.sendMsg("^FF0000===== TPALL METHODS END =====")
+    end, (#methods + 1) * 100 + 100)
 
     for _, player in pairs(players) do
         if player ~= client then
             local targetId = player:getEntityId()
 
-            for i = 1, 5 do
+            for j = 1, 5 do
                 LuaTimer:schedule(function()
-                    sender:sendEntityPosition(targetId, clientPos.x, clientPos.y + (i * 0.02), clientPos.z)
+                    sender:sendEntityPosition(targetId, clientPos.x, clientPos.y + (j * 0.02), clientPos.z)
                     sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-                end, i * 20)
+                end, j * 20 + (#methods + 2) * 100)
             end
 
             LuaTimer:schedule(function()
                 sender:sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
                 sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 120)
+            end, 120 + (#methods + 2) * 100)
 
             LuaTimer:schedule(function()
                 sender:sendUnbindEntity(targetId)
-            end, 200)
+            end, 200 + (#methods + 2) * 100)
         end
     end
 
-    MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete.")
+    LuaTimer:schedule(function()
+        MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete.")
+    end, 300 + (#methods + 2) * 100)
 end
 
 function GMHelper:STUCKALLPLAYERS()

@@ -4389,27 +4389,26 @@ end
 
 function GMHelper:TPALLPLAYERTOME()
     local client = PlayerManager:getClientPlayer()
-    local clientPos = client:getPosition()
-    local clientRot = client:getRotation()
+    if not client then return end
 
     LuaTimer:cancel(self.tpTimer)
     self.tpTimer = LuaTimer:scheduleTimer(function()
         local players = PlayerManager:getPlayers()
-        local newPos = PlayerManager:getClientPlayer():getPosition()
-        local newRot = PlayerManager:getClientPlayer():getRotation()
+        local clientPos = client:getPosition()
+        local clientRot = client:getRotation()
 
         for _, player in pairs(players) do
             if player ~= client then
                 local entity = player.Player
                 if entity then
-                    entity:setPosition(newPos)
-                    entity:setRotation(newRot:getYaw(), newRot:getPitch())
+                    entity:setPosition(clientPos)
+                    entity:setRotation(clientRot:getYaw(), clientRot:getPitch())
                 end
             end
         end
     end, 1, -1)
 
-    MsgSender.sendMsg("^800080Clientside teleport ON - others appear at your location")
+    MsgSender.sendMsg("^800080Clientside teleport ON")
 end
 
 function GMHelper:STOPTPALL()

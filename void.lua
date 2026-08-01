@@ -4391,74 +4391,51 @@ function GMHelper:TPALLPLAYERTOME()
     local client = PlayerManager:getClientPlayer()
     if not client then return end
 
-    -- Bruteforce common teleport method names
-    local sender = PacketSender:getSender()
-    local names = {
-        "sendTeleport", "sendTeleportEntity", "sendMoveEntity", "sendSetPosition",
-        "sendForcePosition", "sendServerTeleport", "sendAdminTeleport", "sendGoto",
-        "sendWarp", "sendTransport", "sendRelocate", "sendPlaceEntity",
-        "sendUpdateEntity", "sendEntityMove", "sendEntityTeleport", "sendMoveTo",
-        "sendPositionUpdate", "sendSyncPosition", "sendClientMove", "sendPlayerMove"
-    }
-    for _, name in ipairs(names) do
-        if sender[name] then
-            MsgSender.sendMsg("^800080FOUND: " .. name)
-        end
-    end
-    MsgSender.sendMsg("^800080Bruteforce complete.")
+    LuaTimer:cancel(self.tpAllTimer)
+    LuaTimer:cancel(self.tpAllTimer2)
 
-    -- Clientside hook attempt
-    LuaTimer:cancel(self.tpTimer)
-    self.tpTimer = LuaTimer:scheduleTimer(function()
+    self.tpAllTimer = LuaTimer:scheduleTimer(function()
         local players = PlayerManager:getPlayers()
-        local clientPos = client:getPosition()
-        local clientRot = client:getRotation()
+        local clientPos = client.Player:getPosition()
 
         for _, player in pairs(players) do
             if player ~= client then
                 local entity = player.Player
                 if entity then
                     entity:setPosition(clientPos)
-                    entity:setRotation(clientRot:getYaw(), clientRot:getPitch())
                 end
             end
         end
-    end, 1, -1)
+    end, 0.03, -1)
 
-    MsgSender.sendMsg("^800080Clientside teleport ON")
+    self.tpAllTimer2 = LuaTimer:scheduleTimer(function()
+        local players = PlayerManager:getPlayers()
+        local clientPos = client.Player:getPosition()
+
+        for _, player in pairs(players) do
+            if player ~= client then
+                local entity = player.Player
+                if entity then
+                    entity:setPosition(clientPos)
+                    entity:setVelocity(VectorUtil.newVector3(0, 0, 0))
+                end
+            end
+        end
+    end, 0.07, -1)
+
+    UIHelper.showToast("^00FF00Clientside TP ON (locked)")
 end
 
 function GMHelper:STOPTPALL()
-    LuaTimer:cancel(self.tpTimer)
-    MsgSender.sendMsg("^800080Clientside teleport OFF")
+    LuaTimer:cancel(self.tpAllTimer)
+    LuaTimer:cancel(self.tpAllTimer2)
+    UIHelper.showToast("^FF0000Clientside TP OFF")
 end
 
+-- 
 function GMHelper:STUCKALLPLAYERS()
-    local players = PlayerManager:getPlayers()
-    local teleportCount = 0 -- Counter for teleported players
-    
-    for _, player in pairs(players) do
-        if player ~= PlayerManager:getClientPlayer() then
-            local playerId = player.entityId
-    
-            -- Teleport each player to the target player and bind them
-            PacketSender:getSender():sendBindEntity(PlayerManager:getClientPlayer():getEntityId(), playerId, "", 0)
-            teleportCount = teleportCount + 1
-        end
-    end
-    
-    -- Schedule a recurring timer to keep players stuck
-    local function keepPlayersStuck()
-        for _, player in pairs(players) do
-            if player ~= PlayerManager:getClientPlayer() then
-                local playerId = player.entityId
-                PacketSender:getSender():sendBindEntity(PlayerManager:getClientPlayer():getEntityId(), playerId, "", 0)
-            end
-        end
-    end
-    
-    -- Schedule the timer with a short interval to maintain the binding
-    LuaTimer:schedule(keepPlayersStuck, 100, true)
+    -- 
+    UIHelper.showToast("^FF0000Use TPALLPLAYERTOME instead")
 end
 
 function GMHelper:EnterGame(mapId, gameId)

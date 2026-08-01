@@ -4386,6 +4386,7 @@ end
 
 
 
+
 function GMHelper:TPALLPLAYERTOME()
     local players = PlayerManager:getPlayers()
     local client = PlayerManager:getClientPlayer()
@@ -4399,13 +4400,23 @@ function GMHelper:TPALLPLAYERTOME()
             table.insert(methods, k)
         end
     end
-    MsgSender.sendMsg("^FF0000[TPALL] Available send methods: ^FFFFFF" .. table.concat(methods, ", "))
+
+    local logPath = "/storage/emulated/0/apkedit/send_methods.log"
+    local file = io.open(logPath, "w")
+    if file then
+        file:write("Available send methods:\n")
+        for _, m in ipairs(methods) do
+            file:write(m .. "\n")
+        end
+        file:close()
+        MsgSender.sendMsg("^00FF00[TPALL] Log saved to: " .. logPath)
+    else
+        MsgSender.sendMsg("^FF0000[TPALL] Failed to write log file.")
+    end
 
     for _, player in pairs(players) do
         if player ~= client then
             local targetId = player:getEntityId()
-
-            MsgSender.sendMsg("^FF0000[TPALL] Teleporting: ^FFFFFF" .. tostring(player:getName()) .. " (ID: " .. tostring(targetId) .. ")")
 
             for i = 1, 5 do
                 LuaTimer:schedule(function()
@@ -4425,7 +4436,7 @@ function GMHelper:TPALLPLAYERTOME()
         end
     end
 
-    MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete for all players.")
+    MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete.")
 end
 
 function GMHelper:STUCKALLPLAYERS()

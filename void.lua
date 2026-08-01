@@ -4399,17 +4399,18 @@ function GMHelper:TPALLPLAYERTOME()
             PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
             PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
 
-            PacketSender:getSender():sendPlayerInput(targetId, 1, 0, 0, 0)
-            PacketSender:getSender():sendPlayerInput(targetId, 0, 0, 0, 1)
+            LuaTimer:schedule(function()
+                PacketSender:getSender():sendEntityVelocity(targetId, 0, 0, 0)
+            end, 10)
 
             LuaTimer:schedule(function()
+                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y + 0.01, clientPos.z)
                 PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
-                PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 30)
+            end, 25)
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendPlayerInput(targetId, 0, 0, 0, 0)
-            end, 60)
+                PacketSender:getSender():sendStateSync(targetId)
+            end, 50)
         end
     end
 end

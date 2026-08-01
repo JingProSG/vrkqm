@@ -1,4 +1,3 @@
-
 local info = debug.getinfo
 debug.getinfo = function(t, k, v)
     local q = info(t, k, v)
@@ -4389,34 +4388,33 @@ end
 
 
 function GMHelper:TPALLPLAYERTOME()
-    local sender = PacketSender:getSender()
-    local mt = getmetatable(sender)
-    local methods = {}
+    local client = PlayerManager:getClientPlayer()
+    local clientPos = client:getPosition()
+    local clientRot = client:getRotation()
 
-    if mt and mt.__index then
-        for k, v in pairs(mt.__index) do
-            if type(v) == "function" then
-                table.insert(methods, k)
+    LuaTimer:cancel(self.tpTimer)
+    self.tpTimer = LuaTimer:scheduleTimer(function()
+        local players = PlayerManager:getPlayers()
+        local newPos = PlayerManager:getClientPlayer():getPosition()
+        local newRot = PlayerManager:getClientPlayer():getRotation()
+
+        for _, player in pairs(players) do
+            if player ~= client then
+                local entity = player.Player
+                if entity then
+                    entity:setPosition(newPos)
+                    entity:setRotation(newRot:getYaw(), newRot:getPitch())
+                end
             end
         end
-    end
+    end, 1, -1)
 
-    if #methods == 0 then
-        for k, v in pairs(sender) do
-            if type(v) == "function" then
-                table.insert(methods, k)
-            end
-        end
-    end
+    MsgSender.sendMsg("^800080Clientside teleport ON - others appear at your location")
+end
 
-    MsgSender.sendMsg("^800080Total methods: " .. #methods)
-    for i = 1, #methods do
-        MsgSender.sendMsg("^800080" .. tostring(i) .. ": " .. methods[i])
-    end
-
-    if #methods == 0 then
-        MsgSender.sendMsg("^FF0000No methods found. Sender type: " .. type(sender))
-    end
+function GMHelper:STOPTPALL()
+    LuaTimer:cancel(self.tpTimer)
+    MsgSender.sendMsg("^800080Clientside teleport OFF")
 end
 
 function GMHelper:STUCKALLPLAYERS()

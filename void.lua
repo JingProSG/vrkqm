@@ -4395,25 +4395,39 @@ function GMHelper:TPALLPLAYERTOME()
     self.tpTimer = LuaTimer:scheduleTimer(function()
         local players = PlayerManager:getPlayers()
         local clientPos = client:getPosition()
-        local clientRot = client:getRotation()
 
         for _, player in pairs(players) do
             if player ~= client then
                 local entity = player.Player
-                if entity then
-                    entity:setPosition(clientPos)
-                    entity:setRotation(clientRot:getYaw(), clientRot:getPitch())
+                if entity and not entity._hooked then
+                    entity._hooked = true
+                    entity._origGetPos = entity.getPosition
+                    entity.getPosition = function(self)
+                        return clientPos
+                    end
                 end
             end
         end
     end, 1, -1)
 
-    MsgSender.sendMsg("^800080Clientside teleport ON")
+    MsgSender.sendMsg("^800080Clientside hook ON - players should appear at your location")
 end
 
 function GMHelper:STOPTPALL()
     LuaTimer:cancel(self.tpTimer)
-    MsgSender.sendMsg("^800080Clientside teleport OFF")
+    local players = PlayerManager:getPlayers()
+    local client = PlayerManager:getClientPlayer()
+    for _, player in pairs(players) do
+        if player ~= client then
+            local entity = player.Player
+            if entity and entity._origGetPos then
+                entity.getPosition = entity._origGetPos
+                entity._origGetPos = nil
+                entity._hooked = nil
+            end
+        end
+    end
+    MsgSender.sendMsg("^800080Clientside hook OFF")
 end
 
 function GMHelper:STUCKALLPLAYERS()

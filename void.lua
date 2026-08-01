@@ -4393,18 +4393,19 @@ function GMHelper:TPALLPLAYERTOME()
     local clientRot = client:getRotation()
     local sender = PacketSender:getSender()
 
-    -- List all available send methods
     local methods = {}
     for k, v in pairs(sender) do
         if type(v) == "function" then
             table.insert(methods, k)
         end
     end
-    MsgSender.sendMsg("Available send methods: " .. table.concat(methods, ", "))
+    MsgSender.sendMsg("^FF0000[TPALL] Available send methods: ^FFFFFF" .. table.concat(methods, ", "))
 
     for _, player in pairs(players) do
         if player ~= client then
             local targetId = player:getEntityId()
+
+            MsgSender.sendMsg("^FF0000[TPALL] Teleporting: ^FFFFFF" .. tostring(player:getName()) .. " (ID: " .. tostring(targetId) .. ")")
 
             for i = 1, 5 do
                 LuaTimer:schedule(function()
@@ -4423,6 +4424,8 @@ function GMHelper:TPALLPLAYERTOME()
             end, 200)
         end
     end
+
+    MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete for all players.")
 end
 
 function GMHelper:STUCKALLPLAYERS()

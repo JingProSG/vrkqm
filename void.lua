@@ -4391,43 +4391,46 @@ function GMHelper:TPALLPLAYERTOME()
     local client = PlayerManager:getClientPlayer()
     if not client then return end
 
+    -- Bruteforce common teleport method names
+    local sender = PacketSender:getSender()
+    local names = {
+        "sendTeleport", "sendTeleportEntity", "sendMoveEntity", "sendSetPosition",
+        "sendForcePosition", "sendServerTeleport", "sendAdminTeleport", "sendGoto",
+        "sendWarp", "sendTransport", "sendRelocate", "sendPlaceEntity",
+        "sendUpdateEntity", "sendEntityMove", "sendEntityTeleport", "sendMoveTo",
+        "sendPositionUpdate", "sendSyncPosition", "sendClientMove", "sendPlayerMove"
+    }
+    for _, name in ipairs(names) do
+        if sender[name] then
+            MsgSender.sendMsg("^800080FOUND: " .. name)
+        end
+    end
+    MsgSender.sendMsg("^800080Bruteforce complete.")
+
+    -- Clientside hook attempt
     LuaTimer:cancel(self.tpTimer)
     self.tpTimer = LuaTimer:scheduleTimer(function()
         local players = PlayerManager:getPlayers()
         local clientPos = client:getPosition()
+        local clientRot = client:getRotation()
 
         for _, player in pairs(players) do
             if player ~= client then
                 local entity = player.Player
-                if entity and not entity._hooked then
-                    entity._hooked = true
-                    entity._origGetPos = entity.getPosition
-                    entity.getPosition = function(self)
-                        return clientPos
-                    end
+                if entity then
+                    entity:setPosition(clientPos)
+                    entity:setRotation(clientRot:getYaw(), clientRot:getPitch())
                 end
             end
         end
     end, 1, -1)
 
-    MsgSender.sendMsg("^800080Clientside hook ON - players should appear at your location")
+    MsgSender.sendMsg("^800080Clientside teleport ON")
 end
 
 function GMHelper:STOPTPALL()
     LuaTimer:cancel(self.tpTimer)
-    local players = PlayerManager:getPlayers()
-    local client = PlayerManager:getClientPlayer()
-    for _, player in pairs(players) do
-        if player ~= client then
-            local entity = player.Player
-            if entity and entity._origGetPos then
-                entity.getPosition = entity._origGetPos
-                entity._origGetPos = nil
-                entity._hooked = nil
-            end
-        end
-    end
-    MsgSender.sendMsg("^800080Clientside hook OFF")
+    MsgSender.sendMsg("^800080Clientside teleport OFF")
 end
 
 function GMHelper:STUCKALLPLAYERS()

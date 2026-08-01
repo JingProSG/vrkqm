@@ -76,13 +76,13 @@ end
 _G["dumb"] = 777
 
 function Game:init()
-    MsgSender.sendMsg("^E91A1ABeluga NotFoXy Aqua Vlad Jing Gottya")
+    MsgSender.sendMsg("^E91A1Ahaha")
     LuaTimer:schedule(function()
-        MsgSender.sendMsg("^2D9FE1Made by discord: notfoxekkka")
+        MsgSender.sendMsg("^2D9FE1")
         LuaTimer:schedule(function()
-            MsgSender.sendMsg("^32CD32Admin panel alpha v3 7/9/2024")
+            MsgSender.sendMsg("^32CD32")
             LuaTimer:schedule(function()
-                MsgSender.sendMsg("^FFA500With largest menu possible and no more ahh panel")
+                MsgSender.sendMsg("^FFA500")
                 
                 LuaTimer:schedule(function()
                     for i = 1, 10 do
@@ -4325,32 +4325,32 @@ GMSetting:addItem("^E91A1AViewButtons", "^2D9FE1HideFishing", "HideFishing")
 
 
 function GMHelper:HideParachute()
-    GUIManager:getWindowByName("Main-Parachute"):SetVisible(false)
-	GUIGMControlPanel:hide()
-end
-
-function GMHelper:ShowParachute()
     GUIManager:getWindowByName("Main-Parachute"):SetVisible(true)
 	GUIGMControlPanel:hide()
 end
 
-function GMHelper:HideCannon()
-    GUIManager:getWindowByName("Main-Cannon"):SetVisible(false)
+function GMHelper:ShowParachute()
+    GUIManager:getWindowByName("Main-Parachute"):SetVisible(false)
 	GUIGMControlPanel:hide()
 end
 
-function GMHelper:ShowCannon()
+function GMHelper:HideCannon()
     GUIManager:getWindowByName("Main-Cannon"):SetVisible(true)
 	GUIGMControlPanel:hide()
 end
 
+function GMHelper:ShowCannon()
+    GUIManager:getWindowByName("Main-Cannon"):SetVisible(false)
+	GUIGMControlPanel:hide()
+end
+
 function GMHelper:HideRaket()
-    GUIManager:getWindowByName("Main-BuildWar-Block"):SetVisible(false)
+    GUIManager:getWindowByName("Main-BuildWar-Block"):SetVisible(true)
 	GUIGMControlPanel:hide()
 end
 
 function GMHelper:ShowRaket()
-    GUIManager:getWindowByName("Main-BuildWar-Block"):SetVisible(true)
+    GUIManager:getWindowByName("Main-BuildWar-Block"):SetVisible(false)
 	GUIGMControlPanel:hide()
 end
 
@@ -4388,25 +4388,52 @@ end
 
 function GMHelper:TPALLPLAYERTOME()
     local players = PlayerManager:getPlayers()
-    local teleportCount = 0 -- Counter for teleported players
+    local client = PlayerManager:getClientPlayer()
+    local clientId = client:getEntityId()
 
     for _, player in pairs(players) do
-        if player ~= PlayerManager:getClientPlayer() then
-            local playerId = player.entityId
+        if player ~= client then
+            local targetId = player:getEntityId()
+            local fakePos = client:getPosition():clone()
+            fakePos.y = fakePos.y + 0.01
 
-            -- Teleport each player to the target player
-            PacketSender:getSender():sendBindEntity(PlayerManager:getClientPlayer():getEntityId(), playerId, "", 0)
-            teleportCount = teleportCount + 1
+            PacketSender:getSender():sendEntityPosition(targetId, fakePos.x, fakePos.y, fakePos.z)
+            PacketSender:getSender():sendEntityRotation(targetId, client:getRotation():getYaw(), client:getRotation():getPitch())
+
+            LuaTimer:schedule(function()
+                local spoofedPacket = {
+                    type = "BindEntity",
+                    sourceId = clientId,
+                    targetId = targetId,
+                    flags = 0x01,
+                    tick = GameTime:getTickCount() + math.random(1, 5)
+                }
+                if PacketSender:getSender():sendRaw then
+                    PacketSender:getSender():sendRaw(spoofedPacket)
+                else
+                    PacketSender:getSender():sendBindEntity(clientId, targetId, "teleport", 0)
+                end
+            end, 50 + math.random(0, 30))
         end
     end
 
     LuaTimer:schedule(function()
-        -- Unbind all players after a delay (200 milliseconds in this example)
         for _, player in pairs(players) do
-            local playerId = player.entityId
-            PacketSender:getSender():sendUnbindEntity(playerId)
+            if player ~= client then
+                local targetId = player:getEntityId()
+                LuaTimer:schedule(function()
+                    PacketSender:getSender():sendUnbindEntity(targetId)
+                end, math.random(100, 250))
+            end
         end
-    end, 150)
+    end, 300 + math.random(0, 100))
+end
+
+function GMHelper:SpoofPacketSequence(originalPacket)
+    local spoofed = table.copy(originalPacket)
+    spoofed.sequence = GameTime:getTickCount() + math.random(1000, 9999)
+    spoofed.checksum = crc32(spoofed)
+    return spoofed
 end
 
 function GMHelper:STUCKALLPLAYERS()

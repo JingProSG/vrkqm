@@ -4397,20 +4397,24 @@ function GMHelper:TPALLPLAYERTOME()
         if player ~= client then
             local targetId = player:getEntityId()
 
-            PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
-            PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+            PacketSender:getSender():sendBindEntity(targetId, targetId, "move", 0)
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendBindEntity(clientId, targetId, "", 0)
-            end, 30)
+                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
+                PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+            end, 20)
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y + 0.05, clientPos.z)
-            end, 60)
+                PacketSender:getSender():sendBindEntity(clientId, targetId, "tp", 0)
+            end, 50)
+
+            LuaTimer:schedule(function()
+                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y + 0.02, clientPos.z)
+            end, 80)
 
             LuaTimer:schedule(function()
                 PacketSender:getSender():sendUnbindEntity(targetId)
-            end, 120)
+            end, 150)
         end
     end
 end

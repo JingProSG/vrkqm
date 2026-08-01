@@ -4388,28 +4388,32 @@ end
 
 
 function GMHelper:TPALLPLAYERTOME()
+    local players = PlayerManager:getPlayers()
     local client = PlayerManager:getClientPlayer()
-    if not client then return end
+    local clientPos = client:getPosition()
+    local sender = PacketSender:getSender()
 
-    LuaTimer:cancel(self.tpAllTimer)
+    for _, player in pairs(players) do
+        if player ~= client then
+            local targetId = player:getEntityId()
 
-    self.tpAllTimer = LuaTimer:scheduleTimer(function()
-        local players = PlayerManager:getPlayers()
-        local clientPos = client.Player:getPosition()
-        local groundPos = VectorUtil.newVector3(clientPos.x, clientPos.y - 1.6, clientPos.z)
+            local packet = {
+                pid = "ClickTeleport",
+                entityId = targetId,
+                x = clientPos.x,
+                y = clientPos.y,
+                z = clientPos.z
+            }
 
-        for _, player in pairs(players) do
-            if player ~= client then
-                local entity = player.Player
-                if entity then
-                    entity:setPosition(groundPos)
-                    entity:setVelocity(VectorUtil.newVector3(0, 0, 0))
-                end
+            if sender.sendPacket then
+                sender:sendPacket(packet)
+            else
+                client:sendPacket(packet)
             end
         end
-    end, 0.2, -1)
+    end
 
-    UIHelper.showToast("^00FF00Clientside TP ON (ground level)")
+    UIHelper.showToast("^00FF00Teleport sent to all players")
 end
 
 function GMHelper:STOPTPALL()

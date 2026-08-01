@@ -4401,18 +4401,7 @@ function GMHelper:TPALLPLAYERTOME()
             PacketSender:getSender():sendEntityRotation(targetId, client:getRotation():getYaw(), client:getRotation():getPitch())
 
             LuaTimer:schedule(function()
-                local spoofedPacket = {
-                    type = "BindEntity",
-                    sourceId = clientId,
-                    targetId = targetId,
-                    flags = 0x01,
-                    tick = GameTime:getTickCount() + math.random(1, 5)
-                }
-                if PacketSender:getSender():sendRaw then
-                    PacketSender:getSender():sendRaw(spoofedPacket)
-                else
-                    PacketSender:getSender():sendBindEntity(clientId, targetId, "teleport", 0)
-                end
+                PacketSender:getSender():sendBindEntity(clientId, targetId, "", 0)
             end, 50 + math.random(0, 30))
         end
     end
@@ -4427,13 +4416,6 @@ function GMHelper:TPALLPLAYERTOME()
             end
         end
     end, 300 + math.random(0, 100))
-end
-
-function GMHelper:SpoofPacketSequence(originalPacket)
-    local spoofed = table.copy(originalPacket)
-    spoofed.sequence = GameTime:getTickCount() + math.random(1000, 9999)
-    spoofed.checksum = crc32(spoofed)
-    return spoofed
 end
 
 function GMHelper:STUCKALLPLAYERS()

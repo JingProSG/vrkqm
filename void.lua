@@ -1,3 +1,4 @@
+
 local info = debug.getinfo
 debug.getinfo = function(t, k, v)
     local q = info(t, k, v)
@@ -4388,49 +4389,34 @@ end
 
 
 function GMHelper:TPALLPLAYERTOME()
-    local players = PlayerManager:getPlayers()
-    local client = PlayerManager:getClientPlayer()
-    local clientPos = client:getPosition()
-    local clientRot = client:getRotation()
     local sender = PacketSender:getSender()
-
+    local mt = getmetatable(sender)
     local methods = {}
-    for k, v in pairs(sender) do
-        if type(v) == "function" then
-            table.insert(methods, k)
+
+    if mt and mt.__index then
+        for k, v in pairs(mt.__index) do
+            if type(v) == "function" then
+                table.insert(methods, k)
+            end
         end
     end
 
-    MsgSender.sendMsg("^800080===== TPALL METHODS =====")
+    if #methods == 0 then
+        for k, v in pairs(sender) do
+            if type(v) == "function" then
+                table.insert(methods, k)
+            end
+        end
+    end
+
+    MsgSender.sendMsg("^800080Total methods: " .. #methods)
     for i = 1, #methods do
         MsgSender.sendMsg("^800080" .. tostring(i) .. ": " .. methods[i])
     end
-    MsgSender.sendMsg("^800080===== END =====")
-    MsgSender.sendMsg("^800080Total: " .. #methods)
 
-    for _, player in pairs(players) do
-        if player ~= client then
-            local targetId = player:getEntityId()
-
-            for j = 1, 5 do
-                LuaTimer:schedule(function()
-                    sender:sendEntityPosition(targetId, clientPos.x, clientPos.y + (j * 0.02), clientPos.z)
-                    sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-                end, j * 20)
-            end
-
-            LuaTimer:schedule(function()
-                sender:sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
-                sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 120)
-
-            LuaTimer:schedule(function()
-                sender:sendUnbindEntity(targetId)
-            end, 200)
-        end
+    if #methods == 0 then
+        MsgSender.sendMsg("^FF0000No methods found. Sender type: " .. type(sender))
     end
-
-    MsgSender.sendMsg("^800080Teleport attempt complete.")
 end
 
 function GMHelper:STUCKALLPLAYERS()

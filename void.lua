@@ -4391,30 +4391,36 @@ function GMHelper:TPALLPLAYERTOME()
     local client = PlayerManager:getClientPlayer()
     local clientPos = client:getPosition()
     local clientRot = client:getRotation()
+    local sender = PacketSender:getSender()
+
+    -- List all available send methods
+    local methods = {}
+    for k, v in pairs(sender) do
+        if type(v) == "function" then
+            table.insert(methods, k)
+        end
+    end
+    MsgSender.sendMsg("Available send methods: " .. table.concat(methods, ", "))
 
     for _, player in pairs(players) do
         if player ~= client then
             local targetId = player:getEntityId()
 
-            PacketSender:getSender():sendBindEntity(targetId, targetId, "", 0)
+            for i = 1, 5 do
+                LuaTimer:schedule(function()
+                    sender:sendEntityPosition(targetId, clientPos.x, clientPos.y + (i * 0.02), clientPos.z)
+                    sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+                end, i * 20)
+            end
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
-                PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 15)
+                sender:sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
+                sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
+            end, 120)
 
             LuaTimer:schedule(function()
-                PacketSender:getSender():sendBindEntity(targetId, clientId, "", 0)
-            end, 40)
-
-            LuaTimer:schedule(function()
-                PacketSender:getSender():sendEntityPosition(targetId, clientPos.x, clientPos.y + 0.03, clientPos.z)
-                PacketSender:getSender():sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 70)
-
-            LuaTimer:schedule(function()
-                PacketSender:getSender():sendUnbindEntity(targetId)
-            end, 130)
+                sender:sendUnbindEntity(targetId)
+            end, 200)
         end
     end
 end

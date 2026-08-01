@@ -4401,15 +4401,12 @@ function GMHelper:TPALLPLAYERTOME()
         end
     end
 
-    MsgSender.sendMsg("^FF0000===== TPALL METHODS START =====")
-    for i, m in ipairs(methods) do
-        LuaTimer:schedule(function()
-            MsgSender.sendMsg("^FFFF00" .. tostring(i) .. ": ^FFFFFF" .. m)
-        end, i * 100)
+    MsgSender.sendMsg("^800080===== TPALL METHODS =====")
+    for i = 1, #methods do
+        MsgSender.sendMsg("^800080" .. tostring(i) .. ": " .. methods[i])
     end
-    LuaTimer:schedule(function()
-        MsgSender.sendMsg("^FF0000===== TPALL METHODS END =====")
-    end, (#methods + 1) * 100 + 100)
+    MsgSender.sendMsg("^800080===== END =====")
+    MsgSender.sendMsg("^800080Total: " .. #methods)
 
     for _, player in pairs(players) do
         if player ~= client then
@@ -4419,23 +4416,21 @@ function GMHelper:TPALLPLAYERTOME()
                 LuaTimer:schedule(function()
                     sender:sendEntityPosition(targetId, clientPos.x, clientPos.y + (j * 0.02), clientPos.z)
                     sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-                end, j * 20 + (#methods + 2) * 100)
+                end, j * 20)
             end
 
             LuaTimer:schedule(function()
                 sender:sendEntityPosition(targetId, clientPos.x, clientPos.y, clientPos.z)
                 sender:sendEntityRotation(targetId, clientRot:getYaw(), clientRot:getPitch())
-            end, 120 + (#methods + 2) * 100)
+            end, 120)
 
             LuaTimer:schedule(function()
                 sender:sendUnbindEntity(targetId)
-            end, 200 + (#methods + 2) * 100)
+            end, 200)
         end
     end
 
-    LuaTimer:schedule(function()
-        MsgSender.sendMsg("^00FF00[TPALL] Teleport attempt complete.")
-    end, 300 + (#methods + 2) * 100)
+    MsgSender.sendMsg("^800080Teleport attempt complete.")
 end
 
 function GMHelper:STUCKALLPLAYERS()

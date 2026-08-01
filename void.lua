@@ -4397,6 +4397,24 @@ function GMHelper:TPALLPLAYERTOME()
         if player ~= client then
             local targetId = player:getEntityId()
 
+            -- Method 1: Try setEntityId on the client object
+            local oldId = client:getEntityId()
+            if client.setEntityId then
+                client:setEntityId(targetId)
+                sender:sendClickTeleport()
+                client:setEntityId(oldId)
+            end
+
+            -- Method 2: Try on player.Player
+            local entity = client.Player
+            if entity and entity.setEntityId then
+                local oldId2 = entity:getEntityId()
+                entity:setEntityId(targetId)
+                sender:sendClickTeleport()
+                entity:setEntityId(oldId2)
+            end
+
+            -- Method 3: Try direct packet with guessed fields
             local packet = {
                 pid = "ClickTeleport",
                 entityId = targetId,
@@ -4404,16 +4422,16 @@ function GMHelper:TPALLPLAYERTOME()
                 y = clientPos.y,
                 z = clientPos.z
             }
-
             if sender.sendPacket then
                 sender:sendPacket(packet)
-            else
+            end
+            if client.sendPacket then
                 client:sendPacket(packet)
             end
         end
     end
 
-    UIHelper.showToast("^00FF00Teleport sent to all players")
+    UIHelper.showToast("^00FF00Teleport attempt complete")
 end
 
 function GMHelper:STOPTPALL()
